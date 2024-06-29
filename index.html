@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公開 Google Sheets 到 HTML 表格示例 (改進版)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        #loading {
+            display: none;
+            color: #666;
+        }
+        #error-message {
+            color: red;
+            font-weight: bold;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            color: #333;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">正在加載數據，請稍候...</div>
+    <div id="error-message"></div>
+    <div id="table-container"></div>
+
+    <script>
+        // 替換為您的 Google Apps Script Web 應用程序 URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwCmg59hkW9VQ772jYumcYLh8sTUt15_9e4uynhf74U6qnxhElo6hsodhn3TUKholZVGw/exec';
+
+        // 顯示加載訊息
+        document.getElementById('loading').style.display = 'block';
+
+        fetch(SCRIPT_URL)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                console.log("獲取的數據:", data);
+                return data; // 返回數據以供下一個 then 使用
+            })
+            .then(data => {
+                // 隱藏加載訊息
+                document.getElementById('loading').style.display = 'none';
+                // 顯示表格
+                displayTable(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('error-message').textContent = `錯誤: ${error.message}`;
+                // 發生錯誤時也隱藏加載訊息
+                document.getElementById('loading').style.display = 'none';
+            });
+
+        function displayTable(data) {
+            const container = document.getElementById('table-container');
+            const table = document.createElement('table');
+            
+            data.forEach((row, rowIndex) => {
+                const tr = table.insertRow();
+                row.forEach((cell, cellIndex) => {
+                    const cellElement = rowIndex === 0 ? document.createElement('th') : document.createElement('td');
+                    cellElement.textContent = cell;
+                    tr.appendChild(cellElement);
+                });
+            });
+
+            container.appendChild(table);
+        }
+    </script>
+</body>
+</html>
